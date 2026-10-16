@@ -1,0 +1,74 @@
+# Product Growth & Experimentation Intelligence Platform
+# Configuration File
+
+project:
+  name: "Product Growth & Experimentation Intelligence Platform"
+  version: "1.0.0"
+  random_seed: 42
+
+data:
+  dataset_name: "criteo-research-uplift-v2.1"
+  raw_url: "https://huggingface.co/datasets/criteo/criteo-uplift/resolve/main/criteo-research-uplift-v2.1.csv.gz"
+  expected_treatment_ratio: 0.8460  # ~84.6% treatment allocation in Criteo dataset
+  features:
+    - "f0"
+    - "f1"
+    - "f2"
+    - "f3"
+    - "f4"
+    - "f5"
+    - "f6"
+    - "f7"
+    - "f8"
+    - "f9"
+    - "f10"
+    - "f11"
+  treatment_col: "treatment"
+  exposure_col: "exposure"
+  conversion_col: "conversion"
+  visit_col: "visit"
+  sample_size: 250000
+  test_size: 0.30
+  val_size: 0.15
+
+paths:
+  data_dir: "data"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  raw_file: "data/raw/criteo-research-uplift-v2.1.csv.gz"
+  sample_parquet: "data/processed/criteo_sample_250k.parquet"
+  synthetic_parquet: "data/processed/synthetic_validation.parquet"
+  figures_dir: "docs/figures"
+  reports_dir: "docs/reports"
+
+experimentation:
+  alpha: 0.05
+  power: 0.80
+  two_sided: true
+  srm_alpha: 0.001
+  mde_relative_target: 0.10
+  multiple_testing_methods:
+    - "bonferroni"
+    - "fdr_bh"
+
+modeling:
+  cross_validation_folds: 3
+  lightgbm:
+    n_estimators: 100
+    learning_rate: 0.05
+    max_depth: 5
+    num_leaves: 31
+    min_child_samples: 50
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+    n_jobs: -1
+  logistic_regression:
+    max_iter: 500
+    random_state: 42
+
+economics:
+  conversion_value: 50.0   # Assumed customer value per conversion ($)
+  contact_cost: 0.10       # Assumed cost per marketing impression / intervention ($)
+  budget: 15000.0          # Assumed total campaign budget ($)
+  label: "SIMULATED_SCENARIO"

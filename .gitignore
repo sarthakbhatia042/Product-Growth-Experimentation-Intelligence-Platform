@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# C libraries and virtual environments
+.venv/
+env/
+venv/
+ENV/
+
+# Data files (keep raw dataset out of git as required)
+data/raw/
+*.parquet
+*.csv.gz
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Mac OS metadata
+.DS_Store
+
+# Streamlit logs
+.streamlit/

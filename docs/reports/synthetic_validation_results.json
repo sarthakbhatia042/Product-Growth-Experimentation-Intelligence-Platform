@@ -1,0 +1,40 @@
+{
+  "false_positive_rate_verification": {
+    "num_simulations": 150,
+    "nominal_alpha": 0.05,
+    "empirical_fpr": 0.06666666666666667,
+    "is_calibrated": true
+  },
+  "ci_coverage_verification": {
+    "num_simulations": 100,
+    "nominal_confidence": 0.95,
+    "empirical_coverage_rate": 0.98,
+    "is_valid_coverage": true
+  },
+  "synthetic_learner_benchmarks": {
+    "S-Learner": {
+      "mean_true_tau": 0.0475551784683998,
+      "mean_pred_tau": 0.031663868218977057,
+      "estimator_bias": -0.015891310249422738,
+      "pehe_rmse": 0.0431216177229347,
+      "spearman_rank_correlation": 0.60691134058395,
+      "kendall_tau": 0.42610645818417336
+    },
+    "T-Learner": {
+      "mean_true_tau": 0.0475551784683998,
+      "mean_pred_tau": 0.03416679462648731,
+      "estimator_bias": -0.013388383841912488,
+      "pehe_rmse": 0.0553519782545447,
+      "spearman_rank_correlation": 0.5481667703133937,
+      "kendall_tau": 0.37962276999433364
+    },
+    "X-Learner": {
+      "mean_true_tau": 0.0475551784683998,
+      "mean_pred_tau": 0.03433552132239892,
+      "estimator_bias": -0.013219657146000872,
+      "pehe_rmse": 0.03993987286287529,
+      "spearman_rank_correlation": 0.6466420889432981,
+      "kendall_tau": 0.46281346756450426
+    }
+  }
+}

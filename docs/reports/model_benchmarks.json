@@ -1,0 +1,59 @@
+{
+  "model_benchmarks": [
+    {
+      "model_name": "Baseline ATE",
+      "auuc": -10.7089873587643,
+      "qini_score": -9.10296595321277,
+      "mean_predicted_uplift": 0.0009577968523226068,
+      "std_predicted_uplift": 1.0842021724855044e-19
+    },
+    {
+      "model_name": "S-Learner",
+      "auuc": -19.700557274607018,
+      "qini_score": -16.74920273072047,
+      "mean_predicted_uplift": 0.0006167178315996739,
+      "std_predicted_uplift": 0.013409565391002966
+    },
+    {
+      "model_name": "T-Learner",
+      "auuc": 15.028553492390039,
+      "qini_score": 12.870085969952072,
+      "mean_predicted_uplift": 0.0008939296289625266,
+      "std_predicted_uplift": 0.024990684097502887
+    },
+    {
+      "model_name": "X-Learner",
+      "auuc": 10.377709440203958,
+      "qini_score": 8.966490767978556,
+      "mean_predicted_uplift": 0.0007329881799130583,
+      "std_predicted_uplift": 0.007932973333059973
+    }
+  ],
+  "best_model": "X-Learner",
+  "bootstrap_uncertainty": {
+    "auuc_mean": 7.4571816249658776,
+    "auuc_se": 16.30638545346738,
+    "auuc_ci_lower": -21.832643799423938,
+    "auuc_ci_upper": 37.88793568550778,
+    "qini_mean": 6.47173976062228,
+    "qini_se": 13.934562570641667,
+    "qini_ci_lower": -18.603708804385498,
+    "qini_ci_upper": 32.435685944637655
+  },
+  "break_even_lift_pct": 0.2,
+  "optimal_policy": {
+    "name": "Optimal Model-Guided Uplift Policy",
+    "target_fraction": 0.1,
+    "units_targeted": 7500,
+    "incremental_conversions": 63.27950174483202,
+    "total_cost": 750.0,
+    "net_profit": 2413.9750872416007,
+    "roi_pct": 321.8633449655468
+  },
+  "economic_assumptions": {
+    "conversion_value": 50.0,
+    "contact_cost": 0.1,
+    "budget": 15000.0,
+    "disclaimer": "SIMULATED SCENARIO - NOT OBSERVED REVENUE"
+  }
+}
