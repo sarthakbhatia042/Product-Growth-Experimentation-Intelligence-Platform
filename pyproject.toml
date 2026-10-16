@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "product-growth-experimentation-intelligence"
+name = "product-growth-experimentation-intelligence-platform"
 version = "1.0.0"
 description = "Product Growth & Experimentation Intelligence Platform for Randomized Marketing Interventions and Causal Uplift"
 readme = "README.md"
