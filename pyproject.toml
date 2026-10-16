@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "Product Growth & Experimentation Intelligence Platform for Randomized Marketing Interventions and Causal Uplift"
 readme = "README.md"
 authors = [{ name = "Senior ML & Experimentation Engineer" }]
-requires-python = ">=3.9"
+requires-python = "^3.10"
 dependencies = [
     "duckdb>=1.0.0",
     "pandas>=2.0.0",
