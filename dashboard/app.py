@@ -40,7 +40,6 @@ from src.uplift_models.x_learner import XLearner
 # Set Streamlit Page Configuration
 st.set_page_config(
     page_title="Growth & Experimentation Intelligence Platform",
-    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -183,7 +182,6 @@ def get_cached_decile_table():
 
 
 # Sidebar Navigation & Global Controls
-st.sidebar.image("https://img.icons8.com/isometric/100/lightning-bolt.png", width=60)
 st.sidebar.title("Growth Platform")
 st.sidebar.markdown("**Evidence-Based Decision Engine**")
 
@@ -225,7 +223,7 @@ decile_table = get_cached_decile_table()
 # Hero Header Banner
 st.markdown("""
 <div class="hero-banner">
-    <div class="hero-title">⚡ Product Growth & Experimentation Intelligence Platform</div>
+    <div class="hero-title">Product Growth & Experimentation Intelligence Platform</div>
     <div class="hero-subtitle">
         Rigorous Causal Inference, Heterogeneous Treatment Effects, and Policy Optimization on the Criteo Uplift Benchmark
     </div>
@@ -344,12 +342,12 @@ elif selected_tab == "A/B Experiment & Statistical Rigor":
     st.markdown("#### Sample Ratio Mismatch (SRM) Diagnostic")
     if srm_info.get("srm_detected"):
         st.warning(
-            f"⚠️ Sample Ratio Deviation Detected (Chi2 = {srm_info.get('chi2', 0):.2f}, p = {srm_info.get('p_value', 0):.2e}). "
+            f"Sample Ratio Deviation Detected (Chi2 = {srm_info.get('chi2', 0):.2f}, p = {srm_info.get('p_value', 0):.2e}). "
             f"Nominal expected ratio: 84.60% : 15.40%. Actual observed sample ratio: 85.00% : 15.00%. "
             "Note: In Criteo's production ad-serving logs, auction participation and server throttling cause slight ratio fluctuations."
         )
     else:
-        st.success("✅ No Sample Ratio Mismatch detected.")
+        st.success("No Sample Ratio Mismatch detected.")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -446,7 +444,7 @@ elif selected_tab == "Decision & Budget Simulator":
 
     # Dynamic simulation
     break_even = (contact_cost_slider / conversion_value_slider) * 100.0
-    st.info(f"💡 **Break-Even Incremental Conversion Lift:** **{break_even:.3f}%** (Must achieve at least this lift to be profitable).")
+    st.info(f"**Break-Even Incremental Conversion Lift:** **{break_even:.3f}%** (Must achieve at least this lift to be profitable).")
 
     # Run simulator with user parameters
     y_test = df["conversion"].values[:75000]

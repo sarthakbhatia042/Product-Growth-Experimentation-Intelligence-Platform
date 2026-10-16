@@ -1,4 +1,4 @@
-# ⚡ Product Growth & Experimentation Intelligence Platform
+# Product Growth & Experimentation Intelligence Platform
 ### Research-Grade Causal Inference, Uplift Modeling & Decision Economics on the Criteo Benchmark
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
