@@ -46,8 +46,16 @@ def compute_uplift_curve(
         - random_uplift_baseline: linear baseline connecting 0 to end
     """
     n = len(y_true)
-    # Sort descending by predicted uplift scores
-    order = np.argsort(-uplift_scores)
+    # Check for constant scores (e.g. Baseline ATE). If all scores are identical,
+    # break ties uniformly at random to prevent arbitrary index-order drift from biasing AUUC/Qini.
+    if np.all(uplift_scores == uplift_scores[0]) or np.std(uplift_scores) < 1e-12:
+        rng = np.random.default_rng(42)
+        jitter = rng.uniform(-1e-10, 1e-10, size=n)
+        order = np.argsort(-(uplift_scores + jitter))
+    else:
+        # Standard descending sort by predicted uplift
+        order = np.argsort(-uplift_scores)
+
     y_sorted = y_true[order]
     w_sorted = treatment[order]
 
@@ -137,11 +145,20 @@ def calculate_auuc_and_qini(
     area_rand_qini = np.trapezoid(rand_qini, x)
     qini_score = float(area_qini - area_rand_qini)
 
+    # Theoretical maximum Qini area (if all treatment successes occur before any control successes)
+    # Total treatment conversions: curve_df["cum_treatment_conv"].iloc[-1]
+    total_y_w = float(curve_df["cum_treatment_conv"].iloc[-1])
+    # Approximate theoretical maximum Qini area is 0.5 * total_y_w
+    max_qini_area = 0.5 * total_y_w if total_y_w > 0 else 1.0
+    normalized_qini = float(qini_score / max_qini_area) if max_qini_area > 0 else 0.0
+
     return {
         "auuc": auuc,
         "raw_uplift_area": float(area_uplift),
         "qini_score": qini_score,
-        "raw_qini_area": float(area_qini)
+        "raw_qini_area": float(area_qini),
+        "normalized_qini_score": normalized_qini,
+        "units": "Cumulative Incremental Conversions (Qini) / Population-Weighted Uplift (AUUC)"
     }
 
 

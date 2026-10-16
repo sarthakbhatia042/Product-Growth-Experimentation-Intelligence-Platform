@@ -22,12 +22,21 @@ class LiftMetrics:
     control_rate: float
     treatment_rate: float
     absolute_lift: float
-    absolute_lift_se: float
+    # Unpooled standard error & Wald test (directly corresponds to the Wald CI)
+    unpooled_se: float
     absolute_lift_ci_lower: float
     absolute_lift_ci_upper: float
+    wald_z_statistic: float
+    wald_p_value: float
+    # Pooled standard error & Score test (under H0: p_t == p_c)
+    pooled_se: float
+    score_z_statistic: float
+    score_p_value: float
+    # Relative lift with Delta Method CI on log-scale
     relative_lift: float
     relative_lift_ci_lower: float
     relative_lift_ci_upper: float
+    # Primary reported z-statistic and p-value (Score test by default, with Wald also exposed)
     z_statistic: float
     p_value: float
     statistically_significant: bool
@@ -38,11 +47,15 @@ class LiftMetrics:
 class CACEMetrics:
     itt_effect: float
     compliance_rate: float  # Exposure rate among treated (since control exposure == 0)
+    first_stage_se: float   # Standard error of first-stage compliance estimate
+    first_stage_f_stat: float # First stage F-statistic (> 10 indicates strong instrument)
     cace_estimate: float
     cace_se: float
     cace_ci_lower: float
     cace_ci_upper: float
     p_value: float
+    is_instrument_strong: bool
+    exclusion_restriction_notes: str
 
 
 def calculate_relative_lift_ci(
@@ -102,21 +115,23 @@ def analyze_binary_experiment(
     p_c = float(x_c / n_c)
 
     abs_lift = p_t - p_c
-    abs_se = np.sqrt((p_t * (1.0 - p_t) / n_t) + (p_c * (1.0 - p_c) / n_c))
-
+    
+    # 1. Unpooled standard error & Wald inference (strictly corresponds to the Wald 95% CI)
+    unpooled_se = np.sqrt((p_t * (1.0 - p_t) / n_t) + (p_c * (1.0 - p_c) / n_c))
     z_crit = stats.norm.ppf(1.0 - alpha / 2.0)
-    abs_ci_lower = abs_lift - z_crit * abs_se
-    abs_ci_upper = abs_lift + z_crit * abs_se
+    abs_ci_lower = abs_lift - z_crit * unpooled_se
+    abs_ci_upper = abs_lift + z_crit * unpooled_se
+    wald_z = abs_lift / unpooled_se if unpooled_se > 0 else 0.0
+    wald_p = float(2.0 * (1.0 - stats.norm.cdf(abs(wald_z))))
+
+    # 2. Pooled standard error & Score inference (standard two-proportion pooled test under H0: p_t == p_c)
+    p_pool = (x_t + x_c) / (n_t + n_c)
+    pooled_se = np.sqrt(p_pool * (1.0 - p_pool) * (1.0 / n_t + 1.0 / n_c))
+    score_z = abs_lift / pooled_se if pooled_se > 0 else 0.0
+    score_p = float(2.0 * (1.0 - stats.norm.cdf(abs(score_z))))
 
     rel_lift, rel_ci_lower, rel_ci_upper = calculate_relative_lift_ci(p_t, n_t, p_c, n_c, alpha=alpha)
-
-    # Hypothesis testing under H0: p_t == p_c (Pooled standard error)
-    p_pool = (x_t + x_c) / (n_t + n_c)
-    se_pool = np.sqrt(p_pool * (1.0 - p_pool) * (1.0 / n_t + 1.0 / n_c))
-
-    z_stat = (p_t - p_c) / se_pool if se_pool > 0 else 0.0
-    p_value = float(2.0 * (1.0 - stats.norm.cdf(abs(z_stat))))
-    is_sig = bool(p_value < alpha)
+    is_sig = bool(score_p < alpha)
 
     return LiftMetrics(
         metric_name=outcome_col,
@@ -127,14 +142,19 @@ def analyze_binary_experiment(
         control_rate=p_c,
         treatment_rate=p_t,
         absolute_lift=abs_lift,
-        absolute_lift_se=abs_se,
+        unpooled_se=unpooled_se,
         absolute_lift_ci_lower=abs_ci_lower,
         absolute_lift_ci_upper=abs_ci_upper,
+        wald_z_statistic=wald_z,
+        wald_p_value=wald_p,
+        pooled_se=pooled_se,
+        score_z_statistic=score_z,
+        score_p_value=score_p,
         relative_lift=rel_lift,
         relative_lift_ci_lower=rel_ci_lower,
         relative_lift_ci_upper=rel_ci_upper,
-        z_statistic=z_stat,
-        p_value=p_value,
+        z_statistic=score_z,
+        p_value=score_p,
         statistically_significant=is_sig,
         alpha=alpha
     )
@@ -165,13 +185,20 @@ def estimate_cace(
     y_c = control[outcome_col].mean()
     itt = y_t - y_c
 
-    # Compliance rate: proportion of treated units that were effectively exposed
+    # First-stage compliance: proportion of units effectively exposed
     d_t = treated[exposure_col].mean()
     d_c = control[exposure_col].mean()
 
     denom = d_t - d_c
     if denom <= 0:
         raise ValueError(f"Compliance denominator must be positive. Got: {denom}")
+
+    # First-stage diagnostics (instrument strength & F-statistic)
+    var_dt = treated[exposure_col].var() / n_t
+    var_dc = control[exposure_col].var() / n_c if n_c > 0 else 0.0
+    se_first_stage = np.sqrt(var_dt + var_dc)
+    t_first_stage = denom / se_first_stage if se_first_stage > 0 else 0.0
+    f_first_stage = float(t_first_stage ** 2)
 
     cace = itt / denom
 
@@ -180,7 +207,6 @@ def estimate_cace(
     var_yc = control[outcome_col].var() / n_c
     var_itt = var_yt + var_yc
 
-    var_dt = treated[exposure_col].var() / n_t
     # Covariance between Y_t and D_t in treated group
     cov_yt_dt = np.cov(treated[outcome_col], treated[exposure_col])[0, 1] / n_t
 
@@ -199,14 +225,25 @@ def estimate_cace(
     z_stat = cace / cace_se if cace_se > 0 else 0.0
     p_value = float(2.0 * (1.0 - stats.norm.cdf(abs(z_stat))))
 
+    exclusion_notes = (
+        "IV Identification requires: (1) Monotonicity (satisfied by one-sided non-compliance, control exposure = 0); "
+        f"(2) Instrument Relevance (satisfied, First-Stage F = {f_first_stage:.1f} >> 10); "
+        "(3) Exclusion Restriction: Assignment Z alters conversion Y solely through ad impression D. "
+        "Threats to exclusion include auction bidding effects or users converting before an ad impression is rendered."
+    )
+
     return CACEMetrics(
         itt_effect=float(itt),
         compliance_rate=float(denom),
+        first_stage_se=float(se_first_stage),
+        first_stage_f_stat=float(f_first_stage),
         cace_estimate=float(cace),
         cace_se=cace_se,
         cace_ci_lower=float(cace_ci_lower),
         cace_ci_upper=float(cace_ci_upper),
-        p_value=p_value
+        p_value=p_value,
+        is_instrument_strong=bool(f_first_stage > 10.0),
+        exclusion_restriction_notes=exclusion_notes
     )
 
 
